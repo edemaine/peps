@@ -45,8 +45,8 @@ In addition, it defines an analogous notation for generator expressions::
 
     (*it for it in its)  # generator of the concatenation of iterables in 'its'
 
-This notation is effectively short-hand for the following existing
-comprehension notation::
+The new notation listed above is effectively short-hand for the
+following existing notation::
 
     [x for it in its for x in it]
     {x for it in its for x in it}
@@ -146,8 +146,8 @@ defined to be equivalent to the following generator::
             yield from expr
 
 (This is a difference from ``itertools.chain``, whose returned
-iterators lacks a ``send`` method, but natural given that this is a
-generator expression.)
+iterator lacks a ``send`` method, but natural given that this is a
+generator expression and thus should work like a generator.)
 
 
 Backwards Compatibility
