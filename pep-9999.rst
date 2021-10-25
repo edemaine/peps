@@ -26,8 +26,8 @@ unknown number of dictionaries into one dictionary.
 Motivation
 ==========
 
-Extended unpacking notation (``*`` and ``**``) from PEP 448 [#PEP-448]
-makes it easy to combine a few iterables or dictionaries::
+Extended unpacking notation (``*`` and ``**``) from PEP 448 makes it
+easy to combine a few iterables or dictionaries::
 
     [*it1, *it2, *it3]  # list with the concatenation of three iterables
     {*it1, *it2, *it3}  # set with the union of three iterables
@@ -227,7 +227,7 @@ Specifically, it would be symmetric to define the following::
 to be equivalent to ``f(*expr1, *expr2, ...)``.  However, this
 notation would be inconsistent with the current behavior of
 ``f(expr for it in its)``, which passes a single argument (a
-generator) into ``f``.  (While PEP 289 [#PEP-289] requires parentheses
+generator) into ``f``.  (While PEP 289 requires parentheses
 around a generator expression, it explicitly allows these parentheses
 to be the same parentheses that make a a single-argument function
 call.)  To accomplish ``f(*expr1, *expr2, ...)`` with the new notation
@@ -238,10 +238,6 @@ parallel to how current Python supports ``f(*(expr for x in it))``.
 References
 ==========
 
-.. [#PEP-289] PEP 289, Generator Expressions, Hettinger
-   (http://www.python.org/dev/peps/pep-0289)
-.. [#PEP-448] PEP 448, Additional Unpacking Generalizations, Landau
-   (http://www.python.org/dev/peps/pep-0448)
 .. [#guido] Message from Guido van Rossum
    (https://mail.python.org/archives/list/python-ideas@python.org/message/CQPULNM6PM623PLXF5Z63BIUZGOSQEKW/)
 
