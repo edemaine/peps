@@ -14,13 +14,14 @@ Abstract
 ========
 
 This PEP proposes extending list, set, and dict comprehensions, as
-well as generator expressions, to allow unpacking notation (``*`` and
-``**``) at the start of the expression.  For example,
-``[*it for it in its]`` becomes short-hand for
-``[x for it in its for x in it]``.
-This notation makes it easy to combine an unknown number of iterables
-(given by a ``for`` clause) into one list or set or generator, or an
-unknown number of dictionaries into one dictionary.
+well as generator expressions and arguments, to allow unpacking
+notation (``*`` and ``**``) at the start of the expression.  For
+example, ``[*it for it in its]`` becomes short-hand for
+``[x for it in its for x in it]``.  This notation makes it easy to
+combine an unknown number of iterables (given by a ``for`` clause)
+into one list or set or generator, or an unknown number of
+dictionaries into one dictionary.
+
 
 
 Motivation
@@ -33,6 +34,7 @@ makes it easy to combine a few iterables or dictionaries::
     {*it1, *it2, *it3}  # set with the union of three iterables
     {**dict1, **dict2, **dict3}  # dict with the combination of three dicts
     # roughly equivalent to dict1 | dict2 | dict3 thanks to PEP 584
+    f(*it1, *it2, *it3)  # pass in the concatenation of three iterables
 
 This PEP extends this pattern to enable combining an unknown number of
 iterables or dictionaries, via comprehensions::
@@ -40,6 +42,7 @@ iterables or dictionaries, via comprehensions::
     [*it for it in its]  # list with the concatenation of iterables in 'its'
     {*it for it in its}  # set with the union of iterables in 'its'
     {**d for d in dicts} # dict with the combination of dicts in 'dicts'
+    f(*it for it in its) # pass in the concatenation of iterables in 'its'
 
 In addition, it defines an analogous notation for generator expressions::
 
@@ -51,6 +54,7 @@ following existing notation::
     [x for it in its for x in it]
     {x for it in its for x in it}
     {key: value for d in dicts for key, value in d.items()}
+    f(*(x for it in its for x in it))
     (x for it in its for x in it)
 
 (See below for a small difference for generator expressions.)
@@ -67,6 +71,7 @@ following uses of ``itertools.chains``::
     list(itertools.chain(*its))
     set(itertools.chain(*its))
     dict(itertools.chain(*(d.items() for d in dicts)))
+    f(*itertools.chain(*its))
     itertools.chain(*its)
 
 The use of ``*`` unpacking notation in these examples is in fact quite
@@ -84,8 +89,8 @@ In the proposed notation, ``[*it for it in its]`` is analogous to
 is a list so supports indexing) in the same way that
 ``[it for it in its]`` is analogous to
 ``[its[0], its[1], ..., its[len(its)-1]]``.
-The same analogies holds for the set, dictionary, and generator
-versions.
+The same analogies holds for the set, dictionary, generator, and
+argument versions.
 
 This notation was originally motivated by a written exam in a Python
 programming class, where several students used the notation
@@ -124,6 +129,12 @@ and ``double_starred_kvpair`` instead of ``kvpair``::
 ``( assigment_expression | expression !':=')`` but this is equivalent to
 ``named_expression``.)
 
+The rules for arguments currently refer to ``starred_expression``,
+which would be modified to allow ``for`` clauses::
+
+    starred_expression:
+      | '*' expression [for_if_clauses]
+
 The meaning of a starred expression in a list comprehension
 ``[*expr for x in it]`` is to treat each expression as an iterable, and
 concatenate them, in the same way as if they were explicitly listed
@@ -131,8 +142,10 @@ via ``[*expr1, *expr2, ...]``.  Similarly, ``{*expr for x in it}``
 forms a set union, as if the expressions were explicited listed via
 ``{*expr1, *expr2, ...}``; and ``{**expr for x in it}`` combines
 dictionaries, as if the expressions were explicitly listed via
-``{**expr1, **expr2, ...}``.  As usual with sets and dictionaries,
-repeated elements/keys replace earlier instances.
+``{**expr1, **expr2, ...}``.  (As usual with sets and dictionaries,
+repeated elements/keys replace earlier instances.)  Similarly,
+``f(*expr for x in it)`` works as if the expressions were listed via
+``f(*expr1, *expr2, ...)``.
 
 In normal circumstances, the generator expression ``(*expr for x in
 it)`` forms a generator producing the concatenation of the iterables
@@ -215,10 +228,18 @@ not a tuple comprehension; rather, it is a generator expression.
 Hence the proposal to make the generator expression symmetric with
 list comprehensions.
 
+Another possible interpretation of ``f(*it for it in its)`` is that it
+calls ``f`` with a single argument equal to the new generator
+expression ``(*it for it in its)``.  PEP 289 [#PEP-289] in fact says
+that the parentheses around a generator are optional in a
+single-argument function call.
+
 
 References
 ==========
 
+.. [#PEP-289] PEP 289, Generator Expressions, Hettinger
+   (http://www.python.org/dev/peps/pep-0289)
 .. [#PEP-448] PEP 448, Additional Unpacking Generalizations, Landau
    (http://www.python.org/dev/peps/pep-0448)
 .. [#guido] Message from Guido van Rossum
