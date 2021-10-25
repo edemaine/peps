@@ -206,7 +206,7 @@ the existing tuple unpacking notation::
     (*it1, *it2, *it3)  # tuple with the concatenation of three iterables
 
 Specifically, the following notation would be symmetric to the proposed
-notation for lists, sets, and dictionaries::
+notation for lists, sets, dictionaries, and generators::
 
     (*it for it in its)  # tuple with the concatenation of iterables in 'its'
 
@@ -215,10 +215,31 @@ not a tuple comprehension; rather, it is a generator expression.
 Hence the proposal to make the generator expression symmetric with
 list comprehensions.
 
+Similarly, it seemed natural to define an unbounded version of the
+existing argument unpacking notation::
+
+    f(*it1, *it2, *it3)  # pass arguments from three iterables
+
+Specifically, it would be symmetric to define the following::
+
+    f(*expr for it in its)  # pass arguments from iterables in 'its'
+
+to be equivalent to ``f(*expr1, *expr2, ...)``.  However, this
+notation would be inconsistent with the current behavior of
+``f(expr for it in its)``, which passes a single argument (a
+generator) into ``f``.  (While PEP 289 [#PEP-289] requires parentheses
+around a generator expression, it explicitly allows these parentheses
+to be the same parentheses that make a a single-argument function
+call.)  To accomplish ``f(*expr1, *expr2, ...)`` with the new notation
+from this PEP, we can write ``f(*(*expr for it in its))``.  This is
+parallel to how current Python supports ``f(*(expr for x in it))``.
+
 
 References
 ==========
 
+.. [#PEP-289] PEP 289, Generator Expressions, Hettinger
+   (http://www.python.org/dev/peps/pep-0289)
 .. [#PEP-448] PEP 448, Additional Unpacking Generalizations, Landau
    (http://www.python.org/dev/peps/pep-0448)
 .. [#guido] Message from Guido van Rossum
