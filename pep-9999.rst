@@ -1,6 +1,6 @@
 PEP: 9999
 Title: Unpacking in Comprehensions
-Author: Erik Demaine <edemaine@mit.edu>
+Author: Erik Demaine <edemaine@mit.edu>, Adam Hartz <hz@mit.edu>
 Sponsor: TBD
 Status: Draft
 Type: Standards Track
