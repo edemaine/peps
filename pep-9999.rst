@@ -53,6 +53,8 @@ comprehension notation::
     {key: value for d in dicts for key, value in d.items()}
     (x for it in its for x in it)
 
+(See below for a small difference for generator expressions.)
+
 The new notation is more concise, avoiding the use and repetition of
 auxiliary variables, and possibly more intuitive to programmers
 familiar with both comprehensions and unpacking notation.  The
