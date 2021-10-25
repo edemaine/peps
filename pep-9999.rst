@@ -180,7 +180,8 @@ as equivalent to the following code [#guido]::
         out.extend([...x...])
 
 Similarly, we can think of ``out = {...x... for x in it}`` (whether or
-not it uses a ``*`` or a ``:``) as equivalent to the following code::
+not it uses a ``*`` or a ``**`` or a ``:``) as equivalent to the
+following code::
 
     out = set()
     for x in it:
