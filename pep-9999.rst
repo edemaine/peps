@@ -13,13 +13,14 @@ Post-History: 16-Oct-2021
 Abstract
 ========
 
-This PEP proposes extending list, set, and dict comprehensions to
-allow unpacking notation (``*`` and ``**``) at the start of the
-expression.  For example, ``[*it for it in its]`` becomes short-hand
-for ``[x for it in its for x in it]``.  This notation makes it easy to
-combine an unknown number of iterables (given by a ``for`` clause)
-into one list or set, or an unknown number of dictionaries into one
-dictionary.
+This PEP proposes extending list, set, and dict comprehensions, as
+well as generator expressions, to allow unpacking notation (``*`` and
+``**``) at the start of the expression.  For example,
+``[*it for it in its]`` becomes short-hand for
+``[x for it in its for x in it]``.
+This notation makes it easy to combine an unknown number of iterables
+(given by a ``for`` clause) into one list or set or generator, or an
+unknown number of dictionaries into one dictionary.
 
 
 Motivation
@@ -40,12 +41,17 @@ iterables or dictionaries, via comprehensions::
     {*it for it in its}  # set with the union of iterables in 'its'
     {**d for d in dicts} # dict with the combination of dicts in 'dicts'
 
+In addition, it defines an analogous notation for generator expressions::
+
+    (*it for it in its)  # generator of the concatenation of iterables in 'its'
+
 This notation is effectively short-hand for the following existing
 comprehension notation::
 
     [x for it in its for x in it]
     {x for it in its for x in it}
     {key: value for d in dicts for key, value in d.items()}
+    (x for it in its for x in it)
 
 The new notation is more concise, avoiding the use and repetition of
 auxiliary variables, and possibly more intuitive to programmers
@@ -59,6 +65,7 @@ following uses of ``itertools.chains``::
     list(itertools.chain(*its))
     set(itertools.chain(*its))
     dict(itertools.chain(*(d.items() for d in dicts)))
+    itertools.chain(*its)
 
 The use of ``*`` unpacking notation in these examples is in fact quite
 similar to the proposed notation.  In the same way that
@@ -75,12 +82,14 @@ In the proposed notation, ``[*it for it in its]`` is analogous to
 is a list so supports indexing) in the same way that
 ``[it for it in its]`` is analogous to
 ``[its[0], its[1], ..., its[len(its)-1]]``.
-The same analogies holds for the set and dictionary versions.
+The same analogies holds for the set, dictionary, and generator
+versions.
 
 This notation was originally motivated by a written exam in a Python
-programming class, where several students used the notation in their
-solutions, assuming that it already existed in Python.  This suggests
-that the notation is intuitive, even to those who are learning Python.
+programming class, where several students used the notation
+(specifically the ``set`` version) in their solutions, assuming that
+it already existed in Python.  This suggests that the notation is
+intuitive, even to those who are learning Python.
 
 An example where this notation is especially convenient (albeit
 suboptimal in efficiency) is a recursive function that accumulates the
@@ -96,9 +105,9 @@ set of values from the leaves of a tree::
 Specification
 =============
 
-In the grammar, the rules for comprehensions would use
-`starred_named_expression` instead of `named_expression`, and
-`double_starred_kvpair` instead of `kvpair`::
+In the grammar, the rules for comprehensions and generator expressions
+would use `starred_named_expression` instead of `named_expression`,
+and `double_starred_kvpair` instead of `kvpair`::
 
     listcomp:
         | '[' starred_named_expression for_if_clauses ']' 
@@ -106,16 +115,37 @@ In the grammar, the rules for comprehensions would use
         | '{' starred_named_expression for_if_clauses '}' 
     dictcomp:
         | '{' double_starred_kvpair for_if_clauses '}' 
+    genexp:
+        | '(' starred_named_expression for_if_clauses ')' 
+
+(Small note: the current rule for `genexp` uses
+``( assigment_expression | expression !':=')`` but this is equivalent to
+``named_expression``.)
 
 The meaning of a starred expression in a list comprehension
 ``[*expr for x in it]`` is to treat each expression as an iterable, and
 concatenate them, in the same way as if they were explicitly listed
 via ``[*expr1, *expr2, ...]``.  Similarly, ``{*expr for x in it}``
 forms a set union, as if the expressions were explicited listed via
-``{*expr1, *expr2, ...}``, and ``{**expr for x in it}`` combines
+``{*expr1, *expr2, ...}``; and ``{**expr for x in it}`` combines
 dictionaries, as if the expressions were explicitly listed via
-``{**expr1, **expr2, ...}``.  As usual, repeated elements/keys replace
-earlier instances.
+``{**expr1, **expr2, ...}``.  As usual with sets and dictionaries,
+repeated elements/keys replace earlier instances.
+
+In normal circumstances, the generator expression ``(*expr for x in
+it)`` forms a generator producing the concatenation of the iterables
+given by the expressions.  To enable delegation to subgenerators, this
+generator has a `send` method that passes values on to the individual
+iterable currently being processed.  Specifically, the behavior is
+defined to be equivalent to the following generator::
+
+    def generator():
+        for x in it:
+            yield from expr
+
+(This is a difference from `itertools.chain`, whose returned iterators
+lacks a `send` method, but natural given that this is a generator
+expression.)
 
 
 Backwards Compatibility
@@ -140,12 +170,28 @@ This equivalence no longer holds when we allow ``*x`` in place of
 ``...x...``, because ``list.append`` accepts only a single argument.
 
 With the new syntax, we can instead think of
-``out = [...x... for x in it]`` as equivalent to the
-following code (whether or not it uses a ``*``): [#guido]
+``out = [...x... for x in it]`` (whether or not it uses a ``*``)
+as equivalent to the following code [#guido]::
 
     out = []
     for x in it:
         out.extend([...x...])
+
+Similarly, we can think of ``out = {...x... for x in it}`` (whether or
+not it uses a ``*`` or a ``:``) as equivalent to the following code::
+
+    out = set()
+    for x in it:
+        out.update({...x...})
+
+Finally, we can think of ``out = (*...x... for x in it)``
+(specifically the version that uses a ``*``) as equivalent to the
+following code::
+
+    def generator():
+        for x in it:
+            yield from ...x...
+    out = generator()
 
 
 Rejected Ideas
@@ -163,15 +209,8 @@ notation for lists, sets, and dictionaries::
 
 However, this case is not symmetric, because ``(it for it in its)`` is
 not a tuple comprehension; rather, it is a generator expression.
-Another reasonable reading would be the following generator::
-
-    def generate():
-        for it in its:
-            yield from it
-
-Given this ambiguity, we do not propose defining any meaning for
-``(*it for it in its)``, though a future PEP might consider the
-generator expansion.
+Hence the proposal to make the generator expression symmetric with
+list comprehensions.
 
 
 References
