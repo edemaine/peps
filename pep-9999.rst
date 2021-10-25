@@ -101,7 +101,7 @@ set of values from the leaves of a tree::
         if node.children:
             return {*leaf_values(child) for child in node.children}
         else:
-            return node.value
+            return {node.value}
 
 
 Specification
