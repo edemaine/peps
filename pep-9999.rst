@@ -173,7 +173,7 @@ This equivalence no longer holds when we allow ``*x`` in place of
 
 With the new syntax, we can instead think of
 ``out = [...x... for x in it]`` (whether or not it uses a ``*``)
-as equivalent to the following code [#guido]::
+as equivalent to the following code [#guido]_::
 
     out = []
     for x in it:
