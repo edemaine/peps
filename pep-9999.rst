@@ -128,7 +128,7 @@ The meaning of a starred expression in a list comprehension
 ``[*expr for x in it]`` is to treat each expression as an iterable, and
 concatenate them, in the same way as if they were explicitly listed
 via ``[*expr1, *expr2, ...]``.  Similarly, ``{*expr for x in it}``
-forms a set union, as if the expressions were explicited listed via
+forms a set union, as if the expressions were explicitly listed via
 ``{*expr1, *expr2, ...}``; and ``{**expr for x in it}`` combines
 dictionaries, as if the expressions were explicitly listed via
 ``{**expr1, **expr2, ...}``.  As usual with sets and dictionaries,
