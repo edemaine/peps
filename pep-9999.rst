@@ -108,17 +108,17 @@ Specification
 =============
 
 In the grammar, the rules for comprehensions and generator expressions
-would use ``starred_named_expression`` instead of ``named_expression``,
+would use ``star_named_expression`` instead of ``named_expression``,
 and ``double_starred_kvpair`` instead of ``kvpair``::
 
     listcomp:
-        | '[' starred_named_expression for_if_clauses ']' 
+        | '[' star_named_expression for_if_clauses ']'
     setcomp:
-        | '{' starred_named_expression for_if_clauses '}' 
+        | '{' star_named_expression for_if_clauses '}'
     dictcomp:
-        | '{' double_starred_kvpair for_if_clauses '}' 
+        | '{' double_starred_kvpair for_if_clauses '}'
     genexp:
-        | '(' starred_named_expression for_if_clauses ')' 
+        | '(' star_named_expression for_if_clauses ')'
 
 (Small note: the current rule for ``genexp`` uses
 ``( assigment_expression | expression !':=')`` but this is equivalent to
